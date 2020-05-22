@@ -2,7 +2,7 @@
 import { Line } from "vue-chartjs"
 
 export default {
-    name: "LineChart",
+    name: "BaseLineChart",
     extends: Line,
     props: {
         dataSet: Array,
@@ -15,10 +15,10 @@ export default {
     methods: {
         setupChart() {
             return {
-                labels: this.dataSet.map((item, index) => index),
+                labels: this.dataSet.map(item => item.time),
                 datasets: [{
-                    label: "Графік середньої швидкості автомобілів",
-                    data: this.dataSet.map(item => item),
+                    label: "Графік зміни швидкості автомобіля на визначеному проміжку часу",
+                    data: this.dataSet.map(item => item.speed),
                     borderColor: "#638062"
                 }]
             }

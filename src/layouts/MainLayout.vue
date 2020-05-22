@@ -1,39 +1,64 @@
 <template>
-<div class="main_layout">
-    <ReadFile @gotFile="loadDataFromFile" />
-    <button type="button" @click="getVehicles">Go</button>
-    <LineChart v-if="this.listOfVehicles" :data-set="listOfVehicles[999]"/>
+<div class="main__layout">
+    <ReadFile
+        @gotFile="getDataFromFile"
+    />
+    <button type="button" @click="runFunctions">Go</button>
+    <LineChart
+        v-if="listOfAverageSpeed"
+        :data-set="listOfAverageSpeed"
+    />
+    <label for="vehicle-select">Choose a number of vehicle:</label>
+    <select v-if="listOfVehiclesGroupedById" v-model.lazy="currentVehicle" id="vehicle-select">
+        <option>0</option>
+        <option v-for="number in numberOfVehicles" :key="number">{{ number }}</option>
+    </select>
+    <BaseLineChart
+        v-if="listOfVehiclesGroupedById"
+        :key="currentVehicle"
+        :data-set="listOfVehiclesGroupedById[+currentVehicle]"
+    />
 </div>
 </template>
 
 <script>
 import ReadFile from "@/components/ReadFile.vue"
+import BaseLineChart from "@/components/charts/BaseLineChart.vue"
 import LineChart from "@/components/charts/LineChart.vue"
 
 export default {
     name: "MainLayout",
     data: () => ({
         trafficData: null,
-        listOfVehicles: null
+        listOfVehicles: null,
+        listOfVehiclesGroupedById: null,
+        listOfAverageSpeed: null,
+        numberOfVehicles: null,
+        currentVehicle: 0
     }),
     components: {
         ReadFile,
+        BaseLineChart,
         LineChart
     },
     methods: {
-        loadDataFromFile(value) {
+        getDataFromFile(value) {
             if (value["fcd-export"]["timestep"]) this.trafficData = value["fcd-export"]["timestep"]
-            console.log("got it")
+            this.listOfAverageSpeed = null
+            this.listOfVehiclesGroupedById = null
+            this.$notiflixRemoveLoading()
         },
-        groupBy(array, key) {
-            return array.reduce((result, currentValue) => {
-                (result[currentValue[key]] = result[currentValue[key]] || []).push(
-                    currentValue
-                )
-                return result
-            }, {})
+        runFunctions() {
+            this.$notiflixSetLoading()
+            setTimeout(async () => {
+                await this.getListOfVehicles()
+                this.getListOfVehiclesGroupedById()
+                this.getNumberOfVehicle()
+                this.getListOfAverageSpeed()
+                this.$notiflixRemoveLoading()
+            }, 0)
         },
-        getVehicles() {
+        getListOfVehicles() {
             this.listOfVehicles = []
             Object.values(this.trafficData).forEach(item => {
                 if (item.vehicle.length) item.vehicle.forEach(vehicle => this.listOfVehicles.push({
@@ -51,11 +76,18 @@ export default {
                     "time": item._time
                 })
             })
-            this.listOfVehicles = this.listOfVehicles.reduce((result, currentValue) => {
+        },
+        getListOfVehiclesGroupedById() {
+            this.listOfVehiclesGroupedById = this.listOfVehicles.reduce((result, currentValue) => {
                 (result[currentValue["id"]] = result[currentValue["id"]] || []).push(currentValue)
                 return result
             }, {})
-            console.log("done")
+        },
+        getNumberOfVehicle() {
+            this.numberOfVehicles = new Set(this.listOfVehicles.map(item => item.id)).size - 1
+        },
+        getListOfAverageSpeed() {
+            this.listOfAverageSpeed = [...new Set(this.listOfVehicles.map(item => item.speed))]
         }
     }
 }

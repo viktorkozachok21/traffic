@@ -1,5 +1,5 @@
 <template>
-<div class="read_file">
+<div class="read__file">
     <input type="file" @change="readJSONFromFile">
 </div>
 </template>
@@ -10,10 +10,16 @@ export default {
     methods: {
         readJSONFromFile(event) {
             if (event.target.files) {
-                const file = event.target.files[0]
-                const reader = new FileReader()
-                reader.onload = e => this.$emit("gotFile", JSON.parse(e.target.result))
-                reader.readAsText(file)
+                this.$notiflixSetLoading()
+                try {
+                    const file = event.target.files[0]
+                    const reader = new FileReader()
+                    reader.onload = e => this.$emit("gotFile", JSON.parse(e.target.result))
+                    reader.readAsText(file)
+                } catch (e) {
+                    this.$notiflixRemoveLoading()
+                    throw e
+                }
             }
         }
     }
