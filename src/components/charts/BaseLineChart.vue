@@ -17,7 +17,7 @@ export default {
             return {
                 labels: this.dataSet.map(item => item.time),
                 datasets: [{
-                    label: "Графік зміни швидкості автомобіля на визначеному проміжку часу",
+                    label: "Графік зміни швидкості автомобіля на визначеному проміжку",
                     data: this.dataSet.map(item => item.speed),
                     borderColor: "#638062"
                 }]

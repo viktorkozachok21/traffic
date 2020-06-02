@@ -1,21 +1,34 @@
 <template>
 <div class="read__file">
-    <input type="file" @change="readJSONFromFile">
+    <v-file-input
+        label="Оберіть файл з даними"
+        v-model="file"
+        color="teal"
+    ></v-file-input>
 </div>
 </template>
 
 <script>
 export default {
     name: "ReadFile",
+    data: () => ({
+        file: null
+    }),
+    watch: {
+        file: {
+            handler() {
+                this.readJSONFromFile()
+            }
+        }
+    },
     methods: {
-        readJSONFromFile(event) {
-            if (event.target.files) {
+        readJSONFromFile() {
+            if (this.file) {
                 this.$notiflixSetLoading()
                 try {
-                    const file = event.target.files[0]
                     const reader = new FileReader()
                     reader.onload = e => this.$emit("gotFile", JSON.parse(e.target.result))
-                    reader.readAsText(file)
+                    reader.readAsText(this.file)
                 } catch (e) {
                     this.$notiflixRemoveLoading()
                     throw e
@@ -26,5 +39,5 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss" >
 </style>

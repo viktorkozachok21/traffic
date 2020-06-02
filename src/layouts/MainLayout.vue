@@ -1,23 +1,38 @@
 <template>
 <div class="main__layout">
-    <ReadFile
-        @gotFile="getDataFromFile"
-    />
-    <button type="button" @click="runFunctions">Go</button>
-    <LineChart
-        v-if="listOfAverageSpeed"
-        :data-set="listOfAverageSpeed"
-    />
-    <label for="vehicle-select">Choose a number of vehicle:</label>
-    <select v-if="listOfVehiclesGroupedById" v-model.lazy="currentVehicle" id="vehicle-select">
-        <option>0</option>
-        <option v-for="number in numberOfVehicles" :key="number">{{ number }}</option>
-    </select>
-    <BaseLineChart
-        v-if="listOfVehiclesGroupedById"
-        :key="currentVehicle"
-        :data-set="listOfVehiclesGroupedById[+currentVehicle]"
-    />
+    <v-row no-gutters>
+        <v-col cols="6" align="center">
+            <v-container>
+                <ReadFile
+                    @gotFile="getDataFromFile"
+                />
+            </v-container>
+        </v-col>
+        <v-col cols="6" align="center">
+            <v-container>
+                <v-select
+                    v-if="numberOfVehicles"
+                    v-model="currentVehicle"
+                    :items="numberOfVehicles"
+                    label="Оберіть номер автомобіля:"
+                    color="teal"                    
+                ></v-select>
+            </v-container>
+        </v-col>
+        <v-col cols="6" align="center">
+            <LineChart
+                v-if="listOfAverageSpeed"
+                :data-set="listOfAverageSpeed"
+            />
+        </v-col>
+        <v-col cols="6" align="center">
+            <BaseLineChart
+                v-if="listOfVehiclesGroupedById"
+                :key="currentVehicle"
+                :data-set="listOfVehiclesGroupedById[+currentVehicle]"
+            />
+        </v-col>
+    </v-row>
 </div>
 </template>
 
@@ -46,17 +61,17 @@ export default {
             if (value["fcd-export"]["timestep"]) this.trafficData = value["fcd-export"]["timestep"]
             this.listOfAverageSpeed = null
             this.listOfVehiclesGroupedById = null
-            this.$notiflixRemoveLoading()
-        },
-        runFunctions() {
-            this.$notiflixSetLoading()
+            this.currentVehicle = 0
             setTimeout(async () => {
                 await this.getListOfVehicles()
                 this.getListOfVehiclesGroupedById()
                 this.getNumberOfVehicle()
                 this.getListOfAverageSpeed()
-                this.$notiflixRemoveLoading()
             }, 0)
+            this.$notiflixRemoveLoading()
+        },
+        runFunctions() {
+            this.$notiflixSetLoading()
         },
         getListOfVehicles() {
             this.listOfVehicles = []
@@ -84,7 +99,7 @@ export default {
             }, {})
         },
         getNumberOfVehicle() {
-            this.numberOfVehicles = new Set(this.listOfVehicles.map(item => item.id)).size - 1
+            this.numberOfVehicles = [...new Set(this.listOfVehicles.map(item => item.id))]
         },
         getListOfAverageSpeed() {
             this.listOfAverageSpeed = [...new Set(this.listOfVehicles.map(item => item.speed))]
@@ -94,4 +109,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+canvas {
+    margin: 1rem;
+}
 </style>
